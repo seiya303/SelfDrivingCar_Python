@@ -61,12 +61,10 @@ def avg_line(image, lines):
 
 def detectImg(image)
 
-    image = cv2.imread('road.jpg')
     img = imutils.resize(image, width=1000)
     lane_image = np.copy(img)
     canny = canny(lane_image)
     roi = roi(canny)
-
     lines = cv2.HoughLinesP(roi, 1, np.pi/180, 10, np.array([]), minLineLength=30, maxLineGap=5)
     #print(lines)
     line_image = display_lines(lane_image, lines)
