@@ -57,17 +57,22 @@ def avg_line(image, lines):
 
 def detectImg(image)
 
-    img = imutils.resize(image, width=1000)
-    lane_image = np.copy(img)
-    canny = canny(lane_image)
-    roi = roi(canny)
-    lines = cv2.HoughLinesP(roi, 1, np.pi/180, 10, np.array([]), minLineLength=30, maxLineGap=5)
-    #print(lines)
-    line_image = display_lines(lane_image, lines)
-    mixed_image = cv2.addWeighted(lane_image, 0.8, line_image, 1, 1)
-    averaged_lines = avg_line(image, lines)
+    try:
+        img = imutils.resize(image, width=1000)
+        lane_image = np.copy(img)
+        canny = canny(lane_image)
+        roi = roi(canny)
+        lines = cv2.HoughLinesP(roi, 1, np.pi/180, 10, np.array([]), minLineLength=30, maxLineGap=5)
+        #print(lines)
+        line_image = display_lines(lane_image, lines)
+        mixed_image = cv2.addWeighted(lane_image, 0.8, line_image, 1, 1)
+        averaged_lines = avg_line(image, lines)
 
+    except:
+        pass
+        
     return averaged_lines
+
 
 # plt.imshow(roi)
 # plt.show()
