@@ -24,10 +24,11 @@ while True:
 
     blur = cv2.medianBlur(frame,25)
 
-    gray = cv2.cvtColor(blur,cv2.COLOR_BGR2GRAY)
+    gray = cv2.cvtColor(blur,cv2.COLOR_RGB2GRAY)
 
     ret, thresh = cv2.threshold(gray,100,255,cv2.THRESH_BINARY_INV)
     # Display the resulting frame
+    print(ret)
     cv2.imshow('frame',thresh)
     
     # This command let's us quit with the "q" button on a keyboard.
