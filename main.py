@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 from picamera.array import PiRGBArray
 from picamera import PiCamera
 import time
@@ -88,3 +89,5 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
     rawCapture.truncate(0)
     if key == ord("q"):
         break
+=======
+>>>>>>> cfddcfbde567f7c29c2428996d8023e6936d9d9d
