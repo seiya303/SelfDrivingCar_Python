@@ -1,40 +1,90 @@
-## PUT THIS ALL IN ONE CELL!
-
+from picamera.array import PiRGBArray
+from picamera import PiCamera
+import time
 import cv2
-import numpy as np
 import motor
+import numpy as np
+# initialize the camera and grab a reference to the raw camera capture
+camera = PiCamera()
+camera.resolution = (400, 240)
+camera.framerate = 32
+rawCapture = PiRGBArray(camera, size=(400, 240))
+# allow the camera to warmup
+time.sleep(0.1)
+# capture frames from the camera
 
-# Connects to your computer's default camera
-cap = cv2.VideoCapture(0)
+pts1 = np.int32([[40,135]],[360,135],[0,185],[400,185]])
+pts2 = np.int32([[100,0],[280,0],[100,240],[280,240]])
 
+def Perspective(image): #원근법 변환
+    """
+    Capture a Region of Interest
+    """
+    cv2.polylines(image,[src],isClosed=True,color=(255,0,0),thickness=2)
 
-# Automatically grab width and height from video feed
-# (returns float which we need to convert to integer for later on!)
-width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+    Matrix = cv2.getPerspectiveTransform(pts1, pts2)
+    imgPers = cv2.warpPerspective(image, Matrix, Size(400, 240))
+    return imgPers
 
-med_val = 0
-lower = int(max(0, 0.7* med_val))
-upper = int(min(255,1.3 * med_val))
+def Threshold(imgPers):
+    imgGray = cv2.cvtColor(imgPers, cv2.COLOR_RGB2GRAY)
+    imgThresh = cv2.inRange(imgGray, 230, 255)
+    imgEdge = cv2.Canny(imgGray, 900, 900, 3, False)
+    imgFinal = cv2.add(imgThresh, imgEdge)
+    imgFinal = cv2.cvtColor(imgFinal, cv2.COLOR_GRAY2RGB)
+    imgFinalDuplicate = cv2.cvtColor(imgFinal, cv2.COLOR_RGB2BGR)
+    imgFinalDuplicate1 = cv2.cvtColor(imgFinal, cv2.COLOR_RGB2BGR)
+    return imgFinal, imgFinalDuplicate, imgFinalDuplicate1
 
-while True:
+def Histrogram(imgFinalDuplicate):
+    histrogramLane = np.float32([])
     
-    # Capture frame-by-frame
-    ret, frame = cap.read()
+    for i in range(400):
+        ROILane = imgFinalDuplicate(cv2.rectangle(i,140,1,100))
+        ROILane = cv2.divide(255, ROILane)
+        np.append(histrogramLane, int(sum(ROILane)[0]))
+    return histrogramLane
 
-    # Our operations on the frame come here
-#     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
-    edges = cv2.Canny(image=frame, threshold1=lower , threshold2=upper+50)
-    med_val = np.median(frame)
-    # Display the resulting frame
-    cv2.imshow('frame',edges)
-    
-    # This command let's us quit with the "q" button on a keyboard.
-    # Simply pressing X on the window won't work!
-    if cv2.waitKey(1) & 0xFF == ord('q'):
+def LaneFinder(imgFinal, histrogramLane):
+    LeftPtr = np.argmax(histrogramLane[:150])
+    LeftLanePos = np.diff(histrogramLane[0], LeftPtr)
+
+    RightPtr = np.argmax(histrogramLane[250:])
+    RightLanePos = np.diff(histrogramLane[0], LeftPtr)
+
+    cv2.line(imgFinal, [LeftLanePos, 0], [LeftLanePos, 240], color=(0,255,0), thickness=2)
+    cv2.line(imgFinal, [RightLanePos, 0], [RightLanePos, 240], color=(0,255,0), thickness=2)
+    return LeftLanePos, RightLanePos
+
+def LaneCenter(imgFinal, LeftLanePos, RightLanePos):
+    laneCenter = (RightLanePos - LeftLanePos) / 2 + LeftLanePos
+    frameCenter = 188
+
+    cv2.line(imgFinal, [laneCenter, 0], [laneCenter, 240], color=(0,255,0), thickness=3)
+    cv2.line(imgFinal, [frameCenter, 0], [frameCenter, 240], color=(255,0,0), thickness=3)
+
+    Result = laneCenter - frameCenter
+    return Result
+
+for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True):
+    # grab the raw NumPy array representing the image, then initialize the timestamp
+    # and occupied/unoccupied text
+    image = frame.array
+
+    imgPers = Perspective(image)
+    imgFinal, imgFinalDuplicate, imgFinalDuplicate1 = Threshold(imgPers)
+    histrogramLane = Histrogram(imgFinalDuplicate)
+    LeftLanePos, RightLanePos = LaneFinder(imgFinal, histrogramLane)
+    Result = LaneCenter(imgFinal, LeftLanePos, RightLanePos)
+
+    ss.str(f"Result = {Result}") #StringStream
+    cv2.putText(img, str(ss), [1,50], 0, 1, color=(0,0,255), thickness=2)
+
+    # show the frame
+    cv2.imshow("Frame", image)
+    key = cv2.waitKey(1) & 0xFF
+    # clear the stream in preparation for the next frame
+    rawCapture.truncate(0)
+    if key == ord("q"):
         break
-
-# When everything done, release the capture and destroy the windows
-cap.release()
-cv2.destroyAllWindows()
