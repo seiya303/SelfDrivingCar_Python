@@ -5,13 +5,7 @@ import numpy as np
 
 
 def roi(image):
-	# height = image.shape[0]
-	# width = image.shape[1]
-	polygons = np.array([
-	[(6, 500), (767, 327), (430, 4)]
-	])
-	# pts1 = np.array([[203,350],[684,350],[0,500],[873,500]])
-	# pts2 = np.array([[0,0],[1000,0],[0,750],[1000,750]])
+	
 	pts1 = np.float32([[40,135],[360,135],[5,185],[400,185]])
 	pts2 = np.float32([[0,0],[400,0],[0,240],[400,240]])
 	#mask = np.zeros_like(image)
