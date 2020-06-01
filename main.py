@@ -21,6 +21,15 @@ HEIGHT = 240
 pts1 = np.array([[62,135],[340,135],[45,185],[362,185]],np.int32)
 pts2 = np.array([[100,0],[280,0],[100,240],[280,240]],np.int32)
 
+def zero(x):
+    pass
+
+cv2.namedWindow("Trackbars")
+
+cv2.createTrackbar("light", "Trackbars", 0, 179, zero)
+cv2.createTrackbar("saturation", "Trackbars", 0, 255, zero)
+
+
 def Perspective(image, pts1): #원근법 변환
     """
     Capture a Region of Interest
@@ -50,6 +59,8 @@ def Threshold(imgPers):
     # imgBlur = cv2.medianBlur(imgPers, 5)
     # imgBlur = cv2.bilateralFilter(imgPers,9,75,75)
     # -----------------------------------------------
+    light = cv2.getTrackbarPos("L – H", "Trackbars")
+    saturation = cv2.getTrackbarPos("L – S", "Trackbars")
 
     imgThresh = cv2.inRange(imgBlur, 149, 255, cv2.THRESH_BINARY)
 
