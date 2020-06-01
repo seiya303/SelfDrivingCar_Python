@@ -74,7 +74,7 @@ def Threshold(imgPers):
     # imgDilate = cv2.dilate(imgErode,kernel,iterations=1) 
     # -------------------------------------------------------
 
-    sobel_horizontal = cv2.Sobel(imgErode, cv2.CV_8U, 1, 0, ksize=9)
+    sobel_horizontal = cv2.Sobel(closing, cv2.CV_8U, 1, 0, ksize=9)
     # kernel2 = np.ones((3,3),np.uint8)
     # imgMpl = cv2.morphologyEx(sobel_horizontal, cv2.MORPH_CLOSE, kernel2)
     
